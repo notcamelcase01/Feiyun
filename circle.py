@@ -31,7 +31,7 @@ sigTheta = np.sin(t) ** 2 * sigx + np.cos(t) ** 2 * sigy - 2 * np.sin(t) * np.co
 sigthetaP = -np.cos(t) * np.sin(t) * sigx + np.sin(t) * np.cos(t) * sigy + (np.cos(t) ** 2 - np.sin(t) ** 2)*sigxy
 
 
-ax.plot(t, sigx)
+ax.plot(t, sigP)
 
 ay.plot(Z1.real, Z1.imag)
 ay.set_aspect('equal')
