@@ -44,8 +44,8 @@ amp_slider = Slider(
 loading_slider = Slider(
     ax=load_slider,
     label=r"$\beta$",
-    valmin=0,
-    valmax=2 * np.pi,
+    valmin=-np.pi/2,
+    valmax=np.pi/2,
     valinit=beta,
     orientation="vertical"
 )
@@ -61,6 +61,9 @@ def update(val):
     fig.canvas.draw_idle()
 
 
+ax1.set_ylabel("Normalized Stress")
+ax1.set_xlabel("theta curvilinear coordinate")
+plt.suptitle("Behaviour of stress under uni-axial loading on plate weakened by hole")
 amp_slider.on_changed(update)
 loading_slider.on_changed(update)
 ax1.legend()
