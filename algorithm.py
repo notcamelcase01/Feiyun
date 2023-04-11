@@ -5,12 +5,14 @@ def hole(e, eps=1):
     return e + eps / 3 / e ** 2
 
 
-def get_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps):
+def get_signora(s, sigma, loading_angle, R, eta, eps):
     a = 1 + 1j * s
     b = 1 - 1j * s
     alpha = s.real
     beta = s.imag
-
+    sigma_infty_x = sigma * np.sin(loading_angle) ** 2
+    sigma_infty_y = sigma * np.cos(loading_angle) ** 2
+    sigma_infty_xy = -sigma * np.sin(loading_angle) * np.cos(loading_angle)
     C1 = ((alpha[1] - alpha[0]) ** 2 + beta[1] ** 2 - beta[0] ** 2) * 2
     C2 = alpha[1] * (alpha[0] ** 2 - beta[0] ** 2) - alpha[0] * (alpha[1] ** 2 - beta[1] ** 2)
     C3 = (alpha[0] ** 2 - beta[0] ** 2) - (alpha[1] ** 2 - beta[1] ** 2)
@@ -47,7 +49,7 @@ def transform(sigx, sigy, sigxy, t):
     return sigP, sigTheta, sigthetaP
 
 
-def get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps, t):
-    a, b, c = get_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps)
+def get_la_signora(s, sigma, la, R, eta, eps, t):
+    a, b, c = get_signora(s, sigma, la, R, eta, eps)
     a, b, c = transform(a, b, c, t)
     return a, b, c
