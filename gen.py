@@ -27,7 +27,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 6))
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
 #ax1.plot(t, sigx, label=r"$\sigma_p$", marker="v")
-line, = ax1.plot(t, alm.get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps, t), label=r"$\sigma_{\theta}$")
+line, = ax1.plot(t, alm.get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps, t)[1], label=r"$\sigma_{\theta}$")
 line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps).real, alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps).imag)
 axamp = fig.add_axes([0.05, 0.25, 0.0225, 0.63])
 amp_slider = Slider(
@@ -40,7 +40,7 @@ amp_slider = Slider(
 )
 #ax1.plot(t, sigxy, label=r"$\sigma_{p\theta}$", marker="o")
 def update(val):
-    w = alm.get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, amp_slider.val, t)
+    w = alm.get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, amp_slider.val, t)[1]
     line.set_ydata(w)
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), amp_slider.val).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), amp_slider.val).real)

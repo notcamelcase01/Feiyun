@@ -50,4 +50,4 @@ def transform(sigx, sigy, sigxy, t):
 def get_la_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps, t):
     a, b, c = get_signora(s, sigma_infty_x, sigma_infty_y, sigma_infty_xy, R, eta, eps)
     a, b, c = transform(a, b, c, t)
-    return b
+    return a, b, c
