@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Slider, RadioButtons
 
 import algorithm as alm
 
@@ -14,28 +14,32 @@ def eta_f(theta):
 R = 1
 t = np.linspace(0,  np.pi, 180)
 eta = eta_f(t)
-eps = 0
-
+eps = 0.5
+hole_type = alm.HoleType.ELLIPSE
 s = np.array([1.0005 * 1j,  0.9995 * 1j, 0, 0])
 sigma = 1
-beta = np.pi / 2
-z = alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps)
-sigx, sigy, sigxy = alm.get_signora(s, sigma, beta, R, eta, eps)
-sigx, sigy, sigxy = alm.transform(sigx, sigy, sigxy, t)
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 6))
+beta = 0
+z = alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type)
+fig, (wa, ax1, ax2) = plt.subplots(1, 3, figsize=(13, 6),  gridspec_kw={'width_ratios': [1, 2.5, 1]})
+wa.axis('off')
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
-x_ax3 = np.linspace(-6, 6, 5)
-line, = ax1.plot(t, alm.get_la_signora(s, sigma, beta, R, eta, eps, t)[1], label=r"$\sigma_{\theta}$")
-line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps).real, alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps).imag)
-line3, = ax2.plot(x_ax3, np.tan(beta) * x_ax3)
-eps_slider = fig.add_axes([0.02, 0.20, 0.012, 0.63])
-load_slider = fig.add_axes([0.06, 0.20, 0.012, 0.63])
+x_ax3 = np.linspace(-6, 6, 2)
+line, = ax1.plot(t, alm.get_la_signora(s, sigma, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
+line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real, alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
+line3, = ax2.plot(x_ax3, np.tan(np.pi/2 - beta) * x_ax3)
+eps_slider = fig.add_axes([0.04, 0.20, 0.012, 0.63])
+load_slider = fig.add_axes([0.08, 0.20, 0.012, 0.63])
+hole_radio = fig.add_axes([0.10, 0.65, 0.15, 0.15])
+
+shape_radio = RadioButtons(
+    hole_radio, ['ELLIPSE', 'TRIANGLE', 'SQUARE'],
+    )
 
 amp_slider = Slider(
     ax=eps_slider,
     label=r"$\epsilon$",
-    valmin=-1,
+    valmin=0.0,
     valmax=1,
     valinit=eps,
     orientation="vertical"
@@ -52,19 +56,42 @@ loading_slider = Slider(
 
 
 def update(val):
-    w = alm.get_la_signora(s, sigma, loading_slider.val, R, eta, amp_slider.val, t)[1]
+    global eps
+    global beta
+    eps = amp_slider.val
+    beta = loading_slider.val
+    w = alm.get_la_signora(s, sigma, beta, R, eta, eps, t, hole_type)[1]
     line.set_ydata(w)
-    line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), amp_slider.val).imag)
-    line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), amp_slider.val).real)
-    line3.set_ydata(x_ax3 * np.tan(loading_slider.val))
+    line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
+    line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
+    line3.set_ydata(x_ax3 * np.tan(np.pi/2 - beta))
     ax1.set_ylim((w.min() - 1, 1 + w.max()))
     fig.canvas.draw_idle()
+
+
+def change_hole(val):
+    d = {'ELLIPSE': alm.HoleType.ELLIPSE, 'TRIANGLE': alm.HoleType.TRIANGLE, 'SQUARE': alm.HoleType.SQUARE}
+    f = d[val]
+    global hole_type
+    hole_type = d[val]
+    w = alm.get_la_signora(s, sigma, loading_slider.val, R, eta, eps, t, hole_type)[1]
+    line.set_ydata(w)
+    line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
+    line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
+    line3.set_ydata(x_ax3 * np.tan(np.pi / 2 - beta))
+    ax1.set_ylim((w.min() - 1, 1 + w.max()))
+    fig.canvas.draw_idle()
+
+
+amp_slider.on_changed(update)
+loading_slider.on_changed(update)
+shape_radio.on_clicked(change_hole)
 
 
 ax1.set_ylabel("Normalized Stress")
 ax1.set_xlabel("theta curvilinear coordinate")
 plt.suptitle("Behaviour of stress under uni-axial loading on plate weakened by hole")
-amp_slider.on_changed(update)
-loading_slider.on_changed(update)
 ax1.legend()
+ax2.set_aspect('equal')
+ax2.set_title('Plate with Hole and stress direction', fontsize=8)
 plt.show()
