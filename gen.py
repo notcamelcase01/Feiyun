@@ -34,7 +34,7 @@ hole_radio = fig.add_axes([0.10, 0.65, 0.15, 0.15])
 
 shape_radio = RadioButtons(
     hole_radio, ['ELLIPSE', 'TRIANGLE', 'SQUARE'],
-    )
+    radio_props=dict(edgecolor=['white', 'white', 'white']))
 
 amp_slider = Slider(
     ax=eps_slider,
