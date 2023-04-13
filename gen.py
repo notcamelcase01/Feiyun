@@ -6,7 +6,7 @@ import algorithm as alm
 
 plt.style.use('dark_background')
 
-hole_type = alm.HoleType.SQUARE
+hole_type = alm.HoleType.ELLIPSE
 
 
 def eta_f(theta):
