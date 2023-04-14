@@ -2,6 +2,13 @@ import numpy as np
 
 
 def get_normal_stiffness(E1, E2, V12, G12):
+    """
+    :param E1: E1
+    :param E2: E2
+    :param V12: V
+    :param G12: G
+    :return: normal stiffness
+    """
     C = np.zeros((3, 3))
     C[0][0] = 1 / E1
     C[0][1] = -V12 / E1
@@ -12,10 +19,19 @@ def get_normal_stiffness(E1, E2, V12, G12):
 
 
 def get_shear_stiffness(G):
+    """
+    :param G: G
+    :return: Sheer stiffness
+    """
     return np.array([[G, 0], [0, G]]) * 5/6
 
 
 def transform(Q, theta):
+    """
+    :param Q: stiffness
+    :param theta: transformation angle
+    :return: transformed stiffness
+    """
     if Q.shape[0] == 3:
         Ts = np.array([[np.cos(theta) ** 2, np.sin(theta) ** 2, 2 * np.sin(theta) * np.cos(theta)],
                    [np.sin(theta) ** 2, np.cos(theta) ** 2, -2 * np.sin(theta) * np.cos(theta)],
@@ -28,6 +44,15 @@ def transform(Q, theta):
 
 
 def get_ABD(t, theta, E1, E2, V12, G12):
+    """
+    :param t: thickness of each laminate
+    :param theta: direction
+    :param E1: E1
+    :param E2: E2
+    :param V12: V (poison's ratio)
+    :param G12: G
+    :return: ABD
+    """
     Q126 = get_normal_stiffness(E1, E2, V12, G12)
     Q45 = get_shear_stiffness(G12)
     if len(t) is not len(theta):
