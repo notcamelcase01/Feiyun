@@ -81,7 +81,16 @@ def get_displacement_vector(K, f):
     :param f: force vector
     :return: nodal displacement
     """
-    return np.linalg.solve(K, f)
+    try:
+        return np.linalg.solve(K, f)
+    except np.linalg.LinAlgError as e:
+        if 'Singular matrix' in str(e):
+            print("------------------")
+            i = np.eye(K.shape[0])
+            pin = np.linalg.lstsq(K, i, rcond=None)[0]
+            return pin @ f
+        else:
+            raise
 
 
 def get_assembly_vector(DOF, n):

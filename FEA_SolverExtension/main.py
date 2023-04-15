@@ -10,14 +10,15 @@ plt.style.use('dark_background')
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
 
-E1 = 30 * 10**6
-E2 = 30 * 10**6
-mu = 0.3
-G = E1/(2 * (1 + mu))
+E1 = 30 * 10 ** 6
+E2 = 30 * 10 ** 6
+V21 = None
+V12 = .3
+G = E1 / (2 * (1 + V12))
 t = np.array([1/100])
 H = np.sum(t)
 theta = np.array([0]) * np.pi/180
-ABD = stiffness.get_ABD(t, theta, E1, E2, mu, G)
+ABD = stiffness.get_ABD(t, theta, E1, E2, V12, G, V21)
 
 element_type = 2
 OVERRIDE_REDUCED_INTEGRATION = False
@@ -25,11 +26,17 @@ DIMENSIONS = 2
 DOF = 5
 GAUSS_POINT_REQUIRED = 2
 
-nx = 10
-ny = 10
+Hx = 2
+Hy = 2
+by_max = 0.3
+by_min = 0.1
+bx_max = 0.9
+bx_min = 0.7
+nx = 8
+ny = 8
 lx = 1
 ly = 1
-connectivityMatrix, nodalArray, (X, Y) = gencon.get_2D_connectivity_Hybrid(nx, ny, lx, ly, element_type)
+connectivityMatrix, nodalArray, (X, Y), nodalArray1 = gencon.get_2d_connectivity_hole(nx, ny, lx, ly, Hx, Hy, by_max, by_min, bx_max, bx_min)
 numberOfElements = connectivityMatrix.shape[0]
 numberOfNodes = nodalArray.shape[1]
 weightOfGaussPts, gaussPts = sol.init_gauss_points(GAUSS_POINT_REQUIRED)
@@ -38,10 +45,23 @@ reduced_wts, reduced_gpts = sol.init_gauss_points(1 if (not OVERRIDE_REDUCED_INT
 
 KG, fg = sol.init_stiffness_force(numberOfNodes, DOF)
 nodePerElement = element_type ** DIMENSIONS
-
+hole_elements = []
 tik = time.time()
 for elm in range(numberOfElements):
+    KK = 1
     n = connectivityMatrix[elm][1:]
+    xloc = []
+    yloc = []
+    for i in range(nodePerElement):
+        xloc.append(nodalArray1[1][n[i]])
+        yloc.append(nodalArray1[2][n[i]])
+    if np.isnan(np.sum(xloc)) or np.isnan(np.sum(yloc)):
+        """
+        CHECKING IF ELEMENT IS IN HOLE
+        if THERE IS HOLE THEN STIFFNESS WILL BE 0 
+        """
+        KK = 0
+        hole_elements.append(elm)
     xloc = []
     yloc = []
     for i in range(nodePerElement):
@@ -78,43 +98,41 @@ for elm in range(numberOfElements):
             kloc += B2.T @ ABD[6:, 6:] @ B2 * reduced_wts[xgp] * reduced_wts[ygp] * np.linalg.det(J)
     iv = np.array(sol.get_assembly_vector(DOF, n))
     fg[iv[:, None], 0] += floc
-    KG[iv[:, None], iv] += kloc
+    KG[iv[:, None], iv] += kloc * KK
 
-encastrate = np.where((np.isclose(nodalArray[1], 0)) | (np.isclose(nodalArray[1], lx)) | (np.isclose(nodalArray[2], 0)) | (np.isclose(nodalArray[2], ly)))[0]
+encastrate = np.where((np.isclose(nodalArray[2], 0)) | (np.isclose(nodalArray[1], 0)) | (np.isclose(nodalArray[1], lx)) | (np.isclose(nodalArray[2], ly)))[0]
 iv = sol.get_assembly_vector(DOF, encastrate)
 for i in iv:
     KG, fg = sol.impose_boundary_condition(KG, fg, i, 0)
 u = sol.get_displacement_vector(KG, fg)
 tok = time.time()
 print(tok - tik)
+u0 = []
+v0 = []
 w0 = []
+theta_x = []
+theta_y = []
 for i in range(numberOfNodes):
     x = nodalArray[1][i]
+    u0.append(u[DOF * i][0])
+    v0.append(u[DOF * i + 1][0])
     w0.append(u[DOF * i + 2][0])
-reqN, zeta, eta = sol.get_node_from_cord(connectivityMatrix, (lx/2, ly/2), nodalArray, numberOfElements, nodePerElement, element_type)
+    theta_x.append(u[DOF * i + 3][0])
+    theta_y.append(u[DOF * i + 4][0])
+reqN, zeta, eta = sol.get_node_from_cord(connectivityMatrix, (lx * 0.7, ly * 0.3), nodalArray, numberOfElements, nodePerElement, element_type)
 if reqN is None:
     raise Exception("Chose a position inside plate plis")
 N, Nx, Ny = fsdt.get_lagrange_shape_function(zeta, eta, element_type)
 wt = np.array([w0[i] for i in reqN])[:, None]
 xxx = N.T @ wt
-print("Displacement at mid point (mm)", xxx[0][0] * 1000)
+print("Displacement at mid point (m)", xxx[0][0])
 w0 = np.array(w0)
-w0 = w0 / max(w0.max(), w0.min(), key=abs)
-w0 = w0.reshape(((element_type - 1) * ny + 1, (element_type - 1) * nx + 1))
-np.set_printoptions(precision=9)
-np.set_printoptions(suppress=True)
-print(w0)
+w0 = w0.reshape(((element_type - 1) * ny + 1 + Hy, (element_type - 1) * nx + 1 + Hx))
 fig2 = plt.figure(figsize=(6, 6))
 ax = plt.axes(projection='3d')
 ax.plot_wireframe(X, Y, w0)
 ax.set_aspect('equal')
 ax.set_title('w0 is scaled to make graph look prettier')
 ax.set_axis_off()
-fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-ax.contourf(X, Y, w0, 100, cmap='jet')
-ax.set_title('Contour Plot')
-ax.set_xlabel('_x')
-ax.set_ylabel('_y')
-ax.set_aspect('equal')
 plt.show()
 

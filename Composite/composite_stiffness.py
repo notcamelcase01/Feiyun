@@ -1,17 +1,20 @@
 import numpy as np
 
 
-def get_normal_stiffness(E1, E2, V12, G12):
+def get_normal_stiffness(E1, E2, V12, G12, V21=None):
     """
     :param E1: E1
     :param E2: E2
-    :param V12: V
+    :param V12: V12
+    :param V21 : V21
     :param G12: G
     :return: normal stiffness
     """
+    if V21 is None:
+        V21 = V12 * E2 / E1
     C = np.zeros((3, 3))
     C[0][0] = 1 / E1
-    C[0][1] = -V12 / E1
+    C[0][1] = -V21 / E2
     C[1][0] = -V12 / E1
     C[1][1] = 1 / E2
     C[2][2] = 1 / G12
@@ -43,7 +46,7 @@ def transform(Q, theta):
         return np.linalg.inv(Ts) @ Q @ Ts
 
 
-def get_ABD(t, theta, E1, E2, V12, G12):
+def get_ABD(t, theta, E1, E2, V12, G12, V21=None):
     """
     :param t: thickness of each laminate
     :param theta: direction
@@ -51,9 +54,10 @@ def get_ABD(t, theta, E1, E2, V12, G12):
     :param E2: E2
     :param V12: V (poison's ratio)
     :param G12: G
+    :param V21: V21
     :return: ABD
     """
-    Q126 = get_normal_stiffness(E1, E2, V12, G12)
+    Q126 = get_normal_stiffness(E1, E2, V12, G12, V21)
     Q45 = get_shear_stiffness(G12)
     if len(t) is not len(theta):
         raise Exception("theta and t have different amount of elements plis recheck")
