@@ -1,5 +1,6 @@
 import numpy as np
 from enum import IntEnum
+from Composite import composite_stiffness as stiffness
 
 
 class HoleType(IntEnum):
@@ -53,7 +54,7 @@ def get_stress_fn(hole_type, a, b, R, eta, eps):
     return dphiZ, dsiZ
 
 
-def get_signora(s, sigma, loading_angle, R, eta, eps, hole_type=1):
+def get_signora(s, sigma, lamda, loading_angle, R, eta, eps, hole_type=1):
     a = 1 + 1j * s
     b = 1 - 1j * s
     alpha = s.real
@@ -93,7 +94,26 @@ def transform(sigx, sigy, sigxy, t):
     return sigP, sigTheta, sigthetaP
 
 
-def get_la_signora(s, sigma, la, R, eta, eps, t, hole_type=1):
-    a, b, c = get_signora(s, sigma, la, R, eta, eps, hole_type)
+def get_la_signora(s, sigma, lamda, la, R, eta, eps, t, hole_type=1):
+    a, b, c = get_signora(s, sigma, lamda, la, R, eta, eps, hole_type)
     a, b, c = transform(a, b, c, t)
     return a, b, c
+
+
+def get_anisotrpic_coefficients(t, theta, E1, E2, V12, G, V21 = None):
+    h = np.sum(t)
+    b = np.zeros((3, 3))
+    Q = stiffness.get_normal_stiffness(E1, E2, V12, G, V21)
+    for i in range(len(t)):
+        b += stiffness.transform(Q, theta[i]) * t[i]
+    b /= h
+    B = b[0, 0] * b[1, 1] * b[2, 2] + b[0, 0] * b[1, 2] ** 2 + 2 * b[0, 1] * b[1, 2] * b[0, 2] - b[2, 2] * b[0, 1] ** 2 - b[1, 1] * b[0, 2] ** 2
+    a11 = (b[1, 1] * b[2, 2] - b[1, 2] * 2) / B
+    a12 = (b[0, 2] * b[1, 2] - b[0, 1]* b[2, 2]) / B
+    a16 = (b[0, 1] * b[1, 2] - b[0, 2] * b[1, 1]) / B
+    a22 = (b[0, 0] * b[2, 2] - b[0, 2] ** 2) / B
+    a26 = (b[0, 1] * b[0, 2] - b[0, 0] * b[1, 2]) / B
+    a66 = (b[0, 0] * b[1, 1] - b[0, 1] ** 2) / B
+    s = np.roots((a11, -2 * a16, (2 * a12 + a66), - 2 * a26, a22))
+    return np.array([s[0], s[2], 0, 0])
+

@@ -3,9 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 import algorithm as alm
-
 plt.style.use('dark_background')
-
 hole_type = alm.HoleType.ELLIPSE
 
 
@@ -14,10 +12,17 @@ def eta_f(theta):
 
 
 R = 1
+lamda = 0
 t = np.linspace(0, np.pi, 180)
 eta = eta_f(t)
 eps = 0.5
-s = np.array([1.0005 * 1j, 0.9995 * 1j, 0, 0])
+t_laminate = np.array([1])
+theta_laminate = np.array([0]) * np.pi / 180
+E1 = 181 * 10 ** 9
+E2 = E1
+V12 = 0.3
+G = E1 / (2 * (1 + V12))
+s = alm.get_anisotrpic_coefficients(t_laminate, theta_laminate, E1, E2, V12, G)
 sigma = 1
 beta = 0
 z = alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type)
@@ -26,7 +31,7 @@ wa.axis('off')
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
 x_ax3 = np.linspace(-6, 6, 2)
-line, = ax1.plot(t, alm.get_la_signora(s, sigma, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
+line, = ax1.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
 line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real,
                   alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
 line3, = ax2.plot(x_ax3, np.tan(np.pi / 2 - beta) * x_ax3)
@@ -62,7 +67,7 @@ def update(val):
     global beta
     eps = amp_slider.val
     beta = loading_slider.val
-    w = alm.get_la_signora(s, sigma, beta, R, eta, eps, t, hole_type)[1]
+    w = alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1]
     line.set_ydata(w)
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
@@ -76,7 +81,7 @@ def change_hole(val):
     f = d[val]
     global hole_type
     hole_type = d[val]
-    w = alm.get_la_signora(s, sigma, loading_slider.val, R, eta, eps, t, hole_type)[1]
+    w = alm.get_la_signora(s, sigma, lamda, loading_slider.val, R, eta, eps, t, hole_type)[1]
     line.set_ydata(w)
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
