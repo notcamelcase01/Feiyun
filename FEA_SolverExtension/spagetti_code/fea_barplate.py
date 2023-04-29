@@ -118,7 +118,7 @@ for i in range(numberOfNodes):
     w0.append(u[DOF * i + 2][0])
     theta_x.append(u[DOF * i + 3][0])
     theta_y.append(u[DOF * i + 4][0])
-reqN, zeta, eta = sol.get_node_from_cord(connectivityMatrix, (lx * 0.6, ly * 0.4), nodalArray, numberOfElements, nodePerElement, element_type)
+reqN, zeta, eta = sol.get_node_from_cord(connectivityMatrix, (lx * 0.5, ly * 0.5), nodalArray, numberOfElements, nodePerElement, element_type)
 if reqN is None:
     raise Exception("Chose a position inside plate plis")
 N, Nx, Ny = fsdt.get_lagrange_shape_function(zeta, eta, element_type)

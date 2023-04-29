@@ -78,14 +78,14 @@ def get_ABD(t, theta, E1, E2, V12, G12, V21=None):
 
 
 if __name__ == '__main__':
-    E1_ = 150
-    E2_ = 20
-    G = 5
-    V = 0.3
+    E1_ = 146 * 10 ** 9
+    E2_ = 6.11 * 10 ** 9
+    G = 56.501 * 10 ** 9
+    V = 0.292
     np.set_printoptions(suppress=True)
     np.set_printoptions(precision=3)
-    theta_ = [0, 90, 90, 55]
-    t_ = [.15, .15, .55, .15]
+    theta_ = [90.] * 10
+    t_ = np.array([2.5] * 10) * 1/1000
     theta_ = np.array(theta_) * np.pi / 180
     ABD_ = get_ABD(t_, theta_, E1_, E2_, V, G)
     print(ABD_)

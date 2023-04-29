@@ -12,36 +12,52 @@ def eta_f(theta):
 
 
 R = 1
-lamda = 0
+lamda = 1
 t = np.linspace(0, np.pi, 180)
 eta = eta_f(t)
 eps = 0.5
-t_laminate = np.array([1])
-theta_laminate = np.array([0]) * np.pi / 180
+t_laminate = np.array([1] * 4) / 4
+theta_laminate = np.array([45, 135, 225 , 315]) * np.pi / 180
 E1 = 181 * 10 ** 9
-E2 = E1
-V12 = 0.3
+E2 = 10.30 * 10 ** 9
+V12 = 0.28
+V21 = .02
 G = E1 / (2 * (1 + V12))
-s = alm.get_anisotrpic_coefficients(t_laminate, theta_laminate, E1, E2, V12, G)
+G = 7.17 * 10 ** 9
+s = alm.get_anisotrpic_coefficients(t_laminate, theta_laminate, E1, E2, V12, G, V21)
 sigma = 1
-beta = 0
+beta = np.pi / 4
 z = alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type)
 fig, (wa, ax1, ax2) = plt.subplots(1, 3, figsize=(13, 6), gridspec_kw={'width_ratios': [1, 2.5, 1]})
 wa.axis('off')
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
-x_ax3 = np.linspace(-6, 6, 2)
+x_ax3 = np.linspace(-3, 3, 2)
 line, = ax1.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
 line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real,
                   alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
 line3, = ax2.plot(x_ax3, np.tan(np.pi / 2 - beta) * x_ax3)
+
 eps_slider = fig.add_axes([0.04, 0.20, 0.012, 0.63])
 load_slider = fig.add_axes([0.08, 0.20, 0.012, 0.63])
 hole_radio = fig.add_axes([0.10, 0.65, 0.15, 0.15])
+# bi_asis = fig.add_axes([0.11, 0.45, 0.13, 0.015])
+
 
 shape_radio = RadioButtons(
     hole_radio, ['ELLIPSE', 'TRIANGLE', 'SQUARE'],
     radio_props=dict(edgecolor=['white', 'white', 'white']))
+
+#
+# bi_slider = Slider(
+#     ax=bi_asis,
+#     label=r"$\lambda$",
+#     valmin=0.0,
+#     valmax=1,
+#     valinit=lamda,
+#     orientation="horizontal"
+# )
+
 
 amp_slider = Slider(
     ax=eps_slider,
@@ -86,6 +102,7 @@ def change_hole(val):
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
     line3.set_ydata(x_ax3 * np.tan(np.pi / 2 - beta))
+
     ax1.set_ylim((w.min() - 1, 1 + w.max()))
     fig.canvas.draw_idle()
 
