@@ -12,12 +12,12 @@ def eta_f(theta):
 
 
 R = 1
-lamda = 1
+lamda = 0
 t = np.linspace(0, np.pi, 180)
 eta = eta_f(t)
 eps = 0.5
 t_laminate = np.array([1] * 4) / 4
-theta_laminate = np.array([45, 135, 225 , 315]) * np.pi / 180
+theta_laminate = np.array([0, 90, 90, 0]) * np.pi / 180
 E1 = 181 * 10 ** 9
 E2 = 10.30 * 10 ** 9
 V12 = 0.28

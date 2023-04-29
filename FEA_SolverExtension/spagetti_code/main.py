@@ -31,7 +31,7 @@ Hy = 2
 
 nx = 8
 ny = 8
-lx = 10000
+lx = 10
 ly = 1
 by_max = 0.6 * ly
 by_min = 0.4 * ly
