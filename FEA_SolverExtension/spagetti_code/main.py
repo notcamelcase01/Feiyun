@@ -12,26 +12,26 @@ plt.style.use('dark_background')
 E1 = 181 * 10 ** 9
 E2 = 10.30 * 10 ** 9
 V12 = 0.28
-V21 = .02
+# V21 = .02
 G = E1 / (2 * (1 + V12))
-G = 7.17 * 10 ** 9
+# G = 7.17 * 10 ** 9
 t = np.array([1, 1, 1, 1]) / 4
 H = np.sum(t)
 theta = np.array([0, 90, 90, 0]) * np.pi/180
-ABD = stiffness.get_ABD(t, theta, E1, E2, V12, G)
+ABD = stiffness.get_ABD(t, theta, E1, E2, V12, G) / H
 print(ABD)
 element_type = 2
 OVERRIDE_REDUCED_INTEGRATION = False
 DIMENSIONS = 2
 DOF = 2
-GAUSS_POINT_REQUIRED = 2
+GAUSS_POINT_REQUIRED = 3
 
-Hx = 2
-Hy = 2
+Hx = 8
+Hy = 8
 
-nx = 8
-ny = 8
-lx = 10
+nx = 15
+ny = 15
+lx = 1
 ly = 1
 by_max = 0.6 * ly
 by_min = 0.4 * ly
@@ -71,7 +71,7 @@ for elm in range(numberOfElements):
     yloc = np.array(yloc)[:, None]
     Jy = 0.5 * (yloc[2][0] - yloc[0][0])
     if np.isclose(xloc[1][0], lx):
-        q0 = 1
+        q0 = 100000
         xeta = 1
     # elif yloc[0][0] < ly < yloc[1][0]:
     #     q0 = 1
@@ -93,7 +93,7 @@ for elm in range(numberOfElements):
             B1 = fsdt.get_b1_matrix(Nx, Ny)
             kloc += B1.T @ ABD[:3, :3] @ B1 * weightOfGaussPts[xgp] * weightOfGaussPts[ygp] * np.linalg.det(J)
         N, Nx, Ny = fsdt.get_lagrange_shape_function(xeta, gaussPts[ygp], element_type)
-        floc += q0 * (fsdt.get_n_matrix(N).T @ np.array([[1, 0]]).T) * weightOfGaussPts[ygp] * Jy
+        floc += q0 * (fsdt.get_n_matrix(N).T @ np.array([[H * 1, 0]]).T) * weightOfGaussPts[ygp] * Jy
 
     iv = np.array(sol.get_assembly_vector(DOF, n))
     fg[iv[:, None], 0] += floc
@@ -103,6 +103,10 @@ encastrate = np.where((np.isclose(nodalArray[1], 0)))[0]
 iv = sol.get_assembly_vector(DOF, encastrate)
 for i in iv:
     KG, fg = sol.impose_boundary_condition(KG, fg, i, 0)
+encastrate = np.where((np.isclose(nodalArray[1], lx)))[0]
+# iv = sol.get_assembly_vector(DOF, encastrate)
+# for i in iv:
+#     KG, fg = sol.impose_boundary_condition(KG, fg, i, .001 * lx)
 u = sol.get_displacement_vector(KG, fg)
 tok = time.time()
 print(tok - tik)
@@ -125,9 +129,9 @@ q = stiffness.transform(stiffness.get_normal_stiffness(E1, E2, V12, G), 0)
 sigma = ABD[:3, :3] @ e
 print(sigma.T)
 ssi = alm.transform(sigma[0][0], sigma[1][0], sigma[2][0], np.pi / 4)
-print(ssi)
+print(np.array(ssi))
 sigma = q @ e
 print(sigma.T)
 ssi = alm.transform(sigma[0][0], sigma[1][0], sigma[2][0], np.pi / 4)
-print(ssi)
+print(np.array(ssi))
 

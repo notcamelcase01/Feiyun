@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 import algorithm as alm
-plt.style.use('dark_background')
+plt.style.use('bmh')
 hole_type = alm.HoleType.ELLIPSE
 
 
@@ -15,24 +15,31 @@ R = 1
 lamda = 0
 t = np.linspace(0, np.pi, 180)
 eta = eta_f(t)
-eps = 0.5
+eps = 0.0
 t_laminate = np.array([1] * 4) / 4
-theta_laminate = np.array([0, 90, 90, 0]) * np.pi / 180
+theta_laminate = np.array([30, 60, -60, -30]) * np.pi / 180
 E1 = 181 * 10 ** 9
+
 E2 = 10.30 * 10 ** 9
 V12 = 0.28
-V21 = .02
-G = E1 / (2 * (1 + V12))
+V21 = None
+
 G = 7.17 * 10 ** 9
 s = alm.get_anisotrpic_coefficients(t_laminate, theta_laminate, E1, E2, V12, G, V21)
+print(s)
 sigma = 1
-beta = np.pi / 4
+beta = np.pi / 2
 z = alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type)
+fig2, ax = plt.subplots(1, 1, figsize=(16, 9))
+ax.set_xlabel("Theta")
+ax.set_ylabel("Stress around hole")
+ax.set_title("STRESS DISTRIBUTION (ANALYTICAL)")
 fig, (wa, ax1, ax2) = plt.subplots(1, 3, figsize=(13, 6), gridspec_kw={'width_ratios': [1, 2.5, 1]})
 wa.axis('off')
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
 x_ax3 = np.linspace(-3, 3, 2)
+ax.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
 line, = ax1.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
 line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real,
                   alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
@@ -46,7 +53,7 @@ hole_radio = fig.add_axes([0.10, 0.65, 0.15, 0.15])
 
 shape_radio = RadioButtons(
     hole_radio, ['ELLIPSE', 'TRIANGLE', 'SQUARE'],
-    radio_props=dict(edgecolor=['white', 'white', 'white']))
+    radio_props=dict(edgecolor=['black', 'black', 'black']))
 
 #
 # bi_slider = Slider(
@@ -94,7 +101,6 @@ def update(val):
 
 def change_hole(val):
     d = {'ELLIPSE': alm.HoleType.ELLIPSE, 'TRIANGLE': alm.HoleType.TRIANGLE, 'SQUARE': alm.HoleType.SQUARE}
-    f = d[val]
     global hole_type
     hole_type = d[val]
     w = alm.get_la_signora(s, sigma, lamda, loading_slider.val, R, eta, eps, t, hole_type)[1]
