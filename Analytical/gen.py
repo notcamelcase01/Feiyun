@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 import algorithm as alm
+
 plt.style.use('bmh')
 hole_type = alm.HoleType.ELLIPSE
 
@@ -11,6 +12,7 @@ def eta_f(theta):
     return np.cos(theta) + np.sin(theta) * 1j
 
 
+query_stress = 2
 R = 1
 lamda = 0
 t = np.linspace(0, np.pi, 180)
@@ -39,8 +41,8 @@ wa.axis('off')
 ax2.set_xlim((-3, 3))
 ax2.set_ylim((-3, 3))
 x_ax3 = np.linspace(-3, 3, 2)
-ax.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
-line, = ax1.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1], label=r"$\sigma_{\theta}$")
+ax.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[query_stress], label=r"$\sigma_{\theta}$")
+line, = ax1.plot(t, alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[query_stress], label=r"$\sigma_{\theta}$")
 line2, = ax2.plot(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real,
                   alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
 line3, = ax2.plot(x_ax3, np.tan(np.pi / 2 - beta) * x_ax3)
@@ -90,7 +92,7 @@ def update(val):
     global beta
     eps = amp_slider.val
     beta = loading_slider.val
-    w = alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[1]
+    w = alm.get_la_signora(s, sigma, lamda, beta, R, eta, eps, t, hole_type)[query_stress]
     line.set_ydata(w)
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
@@ -103,7 +105,7 @@ def change_hole(val):
     d = {'ELLIPSE': alm.HoleType.ELLIPSE, 'TRIANGLE': alm.HoleType.TRIANGLE, 'SQUARE': alm.HoleType.SQUARE}
     global hole_type
     hole_type = d[val]
-    w = alm.get_la_signora(s, sigma, lamda, loading_slider.val, R, eta, eps, t, hole_type)[1]
+    w = alm.get_la_signora(s, sigma, lamda, loading_slider.val, R, eta, eps, t, hole_type)[query_stress]
     line.set_ydata(w)
     line2.set_ydata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).imag)
     line2.set_xdata(alm.hole(eta_f(np.linspace(0, 2 * np.pi, 100)), eps, hole_type).real)
