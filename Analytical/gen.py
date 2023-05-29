@@ -12,7 +12,7 @@ def eta_f(theta):
     return np.cos(theta) + np.sin(theta) * 1j
 
 
-query_stress = 2
+query_stress = 1
 R = 1
 lamda = 0
 t = np.linspace(0, np.pi, 180)
