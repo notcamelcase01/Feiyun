@@ -2,8 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def eta_f(theta):
-    return np.cos(theta) + np.sin(theta) * 1j
+def eta_f(theta0):
+    return np.cos(theta0) + np.sin(theta0) * 1j
 
 
 def hole(e):
@@ -22,4 +22,3 @@ Plotting the triangle
 ax.plot(w.real, w.imag)
 ax.set_aspect("equal")
 plt.show()
-
